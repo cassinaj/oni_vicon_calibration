@@ -44,7 +44,7 @@
  *   Karlsruhe Institute of Technology (KIT)
  */
 
-#include "depth_sensor_vicon_calibration/calibration.hpp"
+#include "oni_vicon_calibration/calibrator.hpp"
 
 #include <boost/bind.hpp>
 #include <algorithm>
@@ -58,13 +58,13 @@
 #include <oni_vicon_common/exceptions.hpp>
 #include <oni_vicon_common/type_conversion.hpp>
 
-using namespace depth_sensor_vicon_calibration;
+using namespace oni_vicon_calibration;
 using namespace visualization_msgs;
 using namespace simple_object_tracker;
 using namespace oni_vicon_recorder;
 using namespace oni_vicon;
 
-Calibration::Calibration(ros::NodeHandle& node_handle,
+Calibrator::Calibrator(ros::NodeHandle& node_handle,
                          int global_calibration_iterations,
                          int local_calibration_iterations,
                          const std::string& global_calibration_object_name,
@@ -83,15 +83,15 @@ Calibration::Calibration(ros::NodeHandle& node_handle,
     test_pose_set_(false),
     global_calibration_as_(node_handle,
                            GlobalCalibrationGoal::ACTION_NAME,
-                           boost::bind(&Calibration::globalCalibrationCB, this, _1),
+                           boost::bind(&Calibrator::globalCalibrationCB, this, _1),
                            false),
     local_calibration_as_(node_handle,
                           LocalCalibrationGoal::ACTION_NAME,
-                          boost::bind(&Calibration::localCalibrationCB, this, _1),
+                          boost::bind(&Calibrator::localCalibrationCB, this, _1),
                           false),
     test_calibration_as_(node_handle,
                          TestCalibrationGoal::ACTION_NAME,
-                         boost::bind(&Calibration::testCalibrationCB, this, _1),
+                         boost::bind(&Calibrator::testCalibrationCB, this, _1),
                          false),
     global_calibration_complete_(false),
     local_calibration_complete_(false)
@@ -108,47 +108,47 @@ Calibration::Calibration(ros::NodeHandle& node_handle,
     // advertise services
     save_global_calib_srv_ = node_handle.advertiseService(
                 SaveGlobalCalibration::Request::SERVICE_NAME,
-                &Calibration::saveGlobalCalibrationCB,
+                &Calibrator::saveGlobalCalibrationCB,
                 this);
 
     load_global_calib_srv_ = node_handle.advertiseService(
                 LoadGlobalCalibration::Request::SERVICE_NAME,
-                &Calibration::loadGlobalCalibrationCB,
+                &Calibrator::loadGlobalCalibrationCB,
                 this);
 
     save_local_calib_srv_ = node_handle.advertiseService(
                 SaveLocalCalibration::Request::SERVICE_NAME,
-                &Calibration::saveLocalCalibrationCB,
+                &Calibrator::saveLocalCalibrationCB,
                 this);
 
     load_local_calib_srv_ = node_handle.advertiseService(
                 LoadLocalCalibration::Request::SERVICE_NAME,
-                &Calibration::loadLocalCalibrationCB,
+                &Calibrator::loadLocalCalibrationCB,
                 this);
 
     continue_global_calibration_srv_= node_handle.advertiseService(
                 ContinueGlobalCalibration::Request::SERVICE_NAME,
-                &Calibration::continueGlobalCalibrationCB,
+                &Calibrator::continueGlobalCalibrationCB,
                 this);
 
     complete_global_calibration_srv_= node_handle.advertiseService(
                 CompleteGlobalCalibration::Request::SERVICE_NAME,
-                &Calibration::completeGlobalCalibrationCB,
+                &Calibrator::completeGlobalCalibrationCB,
                 this);
 
     continue_local_calibration_srv_= node_handle.advertiseService(
                 ContinueLocalCalibration::Request::SERVICE_NAME,
-                &Calibration::continueLocalCalibrationCB,
+                &Calibrator::continueLocalCalibrationCB,
                 this);
 
     complete_local_calibration_srv_= node_handle.advertiseService(
                 CompleteLocalCalibration::Request::SERVICE_NAME,
-                &Calibration::completeLocalCalibrationCB,
+                &Calibrator::completeLocalCalibrationCB,
                 this);
 
     continue_test_calibration_srv_= node_handle.advertiseService(
                 ContinueTestCalibration::Request::SERVICE_NAME,
-                &Calibration::continueTestCalibrationCB,
+                &Calibrator::continueTestCalibrationCB,
                 this);    
 }
 
@@ -157,7 +157,7 @@ Calibration::Calibration(ros::NodeHandle& node_handle,
 // == Global Calibration ======================================================================== //
 // ============================================================================================== //
 
-void Calibration::globalCalibrationCB(const GlobalCalibrationGoalConstPtr& goal)
+void Calibrator::globalCalibrationCB(const GlobalCalibrationGoalConstPtr& goal)
 {
     boost::unique_lock<boost::mutex> lock(global_calib_mutex_);
 
@@ -190,7 +190,7 @@ void Calibration::globalCalibrationCB(const GlobalCalibrationGoalConstPtr& goal)
         global_pose_set_ = true;
     }
     server.insert(global_calib_maker,
-                  boost::bind(&Calibration::processGlobalCalibrationFeedback, this, _1));
+                  boost::bind(&Calibrator::processGlobalCalibrationFeedback, this, _1));
     server.applyChanges();
 
     GlobalCalibrationResult result;    
@@ -351,7 +351,7 @@ void Calibration::globalCalibrationCB(const GlobalCalibrationGoalConstPtr& goal)
     global_calibration_as_.setSucceeded(result);
 }
 
-void Calibration::processGlobalCalibrationFeedback(
+void Calibrator::processGlobalCalibrationFeedback(
         const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
     current_global_marker_pose_ = feedback->pose;
@@ -361,7 +361,7 @@ void Calibration::processGlobalCalibrationFeedback(
 // == Local Calibration ========================================================================= //
 // ============================================================================================== //
 
-void Calibration::localCalibrationCB(const LocalCalibrationGoalConstPtr& goal)
+void Calibrator::localCalibrationCB(const LocalCalibrationGoalConstPtr& goal)
 {
     boost::unique_lock<boost::mutex> lock(local_calib_mutex_);
     LocalCalibrationFeedback feedback;
@@ -388,7 +388,7 @@ void Calibration::localCalibrationCB(const LocalCalibrationGoalConstPtr& goal)
         local_pose_set_ = true;
     }
     server.insert(local_calib_maker,
-                  boost::bind(&Calibration::processLocalCalibrationFeedback, this, _1));
+                  boost::bind(&Calibrator::processLocalCalibrationFeedback, this, _1));
     server.applyChanges();
 
     LocalCalibrationResult result;
@@ -553,7 +553,7 @@ void Calibration::localCalibrationCB(const LocalCalibrationGoalConstPtr& goal)
     local_calibration_as_.setSucceeded(result);
 }
 
-void Calibration::processLocalCalibrationFeedback(const InteractiveMarkerFeedbackConstPtr& feedback)
+void Calibrator::processLocalCalibrationFeedback(const InteractiveMarkerFeedbackConstPtr& feedback)
 {
     current_local_marker_pose_ = feedback->pose;
 }
@@ -562,7 +562,7 @@ void Calibration::processLocalCalibrationFeedback(const InteractiveMarkerFeedbac
 // == Testing Calibration ======================================================================= //
 // ============================================================================================== //
 
-void Calibration::testCalibration(const std::string& vicon_object_name,
+void Calibrator::testCalibration(const std::string& vicon_object_name,
                                   const std::string& object,
                                   const std::string& object_display)
 {
@@ -587,7 +587,7 @@ void Calibration::testCalibration(const std::string& vicon_object_name,
         test_pose_set_ = true;
     }
     server.insert(test_object_marker,
-                  boost::bind(&Calibration::processTestCalibrationFeedback, this, _1));
+                  boost::bind(&Calibrator::processTestCalibrationFeedback, this, _1));
     server.applyChanges();
 
     // wait to continue
@@ -683,7 +683,7 @@ void Calibration::testCalibration(const std::string& vicon_object_name,
     ROS_INFO("Calibration test stopped.");
 }
 
-void Calibration::testCalibrationCB(const TestCalibrationGoalConstPtr& goal)
+void Calibrator::testCalibrationCB(const TestCalibrationGoalConstPtr& goal)
 {
     switch (goal->test_what)
     {
@@ -703,7 +703,7 @@ void Calibration::testCalibrationCB(const TestCalibrationGoalConstPtr& goal)
     }
 }
 
-void Calibration::processTestCalibrationFeedback(const InteractiveMarkerFeedbackConstPtr &feedback)
+void Calibrator::processTestCalibrationFeedback(const InteractiveMarkerFeedbackConstPtr &feedback)
 {
     current_test_marker_pose_ = feedback->pose;
 }
@@ -712,7 +712,7 @@ void Calibration::processTestCalibrationFeedback(const InteractiveMarkerFeedback
 // == Service callbacks ========================================================================= //
 // ============================================================================================== //
 
-bool Calibration::continueGlobalCalibrationCB(ContinueGlobalCalibration::Request &request,
+bool Calibrator::continueGlobalCalibrationCB(ContinueGlobalCalibration::Request &request,
                                               ContinueGlobalCalibration::Response &response)
 {
     boost::unique_lock<boost::mutex> lock(global_calib_mutex_);
@@ -724,7 +724,7 @@ bool Calibration::continueGlobalCalibrationCB(ContinueGlobalCalibration::Request
     return true;
 }
 
-bool Calibration::completeGlobalCalibrationCB(CompleteGlobalCalibration::Request &request,
+bool Calibrator::completeGlobalCalibrationCB(CompleteGlobalCalibration::Request &request,
                                               CompleteGlobalCalibration::Response &response)
 {
     boost::unique_lock<boost::mutex> lock(global_calib_mutex_);
@@ -738,7 +738,7 @@ bool Calibration::completeGlobalCalibrationCB(CompleteGlobalCalibration::Request
     return true;
 }
 
-bool Calibration::continueLocalCalibrationCB(ContinueLocalCalibration::Request &request,
+bool Calibrator::continueLocalCalibrationCB(ContinueLocalCalibration::Request &request,
                                              ContinueLocalCalibration::Response &response)
 {
     boost::unique_lock<boost::mutex> lock(local_calib_mutex_);
@@ -750,7 +750,7 @@ bool Calibration::continueLocalCalibrationCB(ContinueLocalCalibration::Request &
     return true;
 }
 
-bool Calibration::completeLocalCalibrationCB(CompleteLocalCalibration::Request &request,
+bool Calibrator::completeLocalCalibrationCB(CompleteLocalCalibration::Request &request,
                                              CompleteLocalCalibration::Response &response)
 {
     boost::unique_lock<boost::mutex> lock(local_calib_mutex_);
@@ -764,7 +764,7 @@ bool Calibration::completeLocalCalibrationCB(CompleteLocalCalibration::Request &
     return true;
 }
 
-bool Calibration::continueTestCalibrationCB(ContinueTestCalibration::Request& request,
+bool Calibrator::continueTestCalibrationCB(ContinueTestCalibration::Request& request,
                                             ContinueTestCalibration::Response& response)
 {
     boost::unique_lock<boost::mutex> lock(test_calib_mutex_);
@@ -776,7 +776,7 @@ bool Calibration::continueTestCalibrationCB(ContinueTestCalibration::Request& re
     return true;
 }
 
-bool Calibration::saveGlobalCalibrationCB(SaveGlobalCalibration::Request& request,
+bool Calibrator::saveGlobalCalibrationCB(SaveGlobalCalibration::Request& request,
                                           SaveGlobalCalibration::Response& response)
 {
     CalibrationWriter calibration_writer;
@@ -791,7 +791,7 @@ bool Calibration::saveGlobalCalibrationCB(SaveGlobalCalibration::Request& reques
     return false;
 }
 
-bool Calibration::loadGlobalCalibrationCB(LoadGlobalCalibration::Request& request,
+bool Calibrator::loadGlobalCalibrationCB(LoadGlobalCalibration::Request& request,
                                           LoadGlobalCalibration::Response& response)
 {
     CalibrationReader calibration_reader;
@@ -813,7 +813,7 @@ bool Calibration::loadGlobalCalibrationCB(LoadGlobalCalibration::Request& reques
     return true;
 }
 
-bool Calibration::saveLocalCalibrationCB(SaveLocalCalibration::Request& request,
+bool Calibrator::saveLocalCalibrationCB(SaveLocalCalibration::Request& request,
                                          SaveLocalCalibration::Response& response)
 {
     CalibrationWriter calibration_writer;
@@ -828,7 +828,7 @@ bool Calibration::saveLocalCalibrationCB(SaveLocalCalibration::Request& request,
     return false;
 }
 
-bool Calibration::loadLocalCalibrationCB(LoadLocalCalibration::Request& request,
+bool Calibrator::loadLocalCalibrationCB(LoadLocalCalibration::Request& request,
                                          LoadLocalCalibration::Response& response)
 {
     CalibrationReader calibration_reader;
@@ -855,7 +855,7 @@ bool Calibration::loadLocalCalibrationCB(LoadLocalCalibration::Request& request,
 // == Helper ==================================================================================== //
 // ============================================================================================== //
 
-void Calibration::publishGlobalStatus(const std::string &status,
+void Calibrator::publishGlobalStatus(const std::string &status,
                                       GlobalCalibrationFeedback& feedback)
 {
     feedback.status = status;
@@ -863,7 +863,7 @@ void Calibration::publishGlobalStatus(const std::string &status,
     ROS_INFO("%s", status.c_str());
 }
 
-void Calibration::publishLocalStatus(const std::string &status,
+void Calibrator::publishLocalStatus(const std::string &status,
                                      LocalCalibrationFeedback &feedback)
 {
     feedback.status = status;
@@ -871,7 +871,7 @@ void Calibration::publishLocalStatus(const std::string &status,
     ROS_INFO("%s", status.c_str());
 }
 
-InteractiveMarker Calibration::makeObjectMarker(const std::string& mesh_resource,
+InteractiveMarker Calibrator::makeObjectMarker(const std::string& mesh_resource,
                                                 const std::string& name)
 {
     // create an interactive marker for our server
@@ -938,7 +938,7 @@ InteractiveMarker Calibration::makeObjectMarker(const std::string& mesh_resource
     return int_marker;
 }
 
-void Calibration::publishMarker(const geometry_msgs::Pose& pose,
+void Calibrator::publishMarker(const geometry_msgs::Pose& pose,
                                 const std::string& mesh_resource,
                                 const ros::Publisher& pub,
                                 int marker_id,
@@ -968,7 +968,7 @@ void Calibration::publishMarker(const geometry_msgs::Pose& pose,
     pub.publish(marker);
 }
 
-void Calibration::cachePose(const geometry_msgs::Pose& pose, const std::string dest) const
+void Calibrator::cachePose(const geometry_msgs::Pose& pose, const std::string dest) const
 {
     std::ofstream pose_tmp_file;
     std::string cache_file = "/tmp/pose_cache_";    
@@ -983,7 +983,7 @@ void Calibration::cachePose(const geometry_msgs::Pose& pose, const std::string d
     pose_tmp_file.close();
 }
 
-void Calibration::loadPoseFromCache(const std::string src, geometry_msgs::Pose& pose) const
+void Calibrator::loadPoseFromCache(const std::string src, geometry_msgs::Pose& pose) const
 {
     std::ifstream pose_tmp_file;
     std::string cache_file = "/tmp/pose_cache_";

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(depth_sensor_vicon_calibration)
+project(oni_vicon_calibration)
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
@@ -53,7 +53,7 @@ generate_messages(
 ###################################
 catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES depth_sensor_vicon_calibration
+    LIBRARIES oni_vicon_calibration
     CATKIN_DEPENDS
         actionlib_msgs
         actionlib
@@ -76,20 +76,20 @@ include_directories(
     "/usr/include/ni/"
 )
 
-set(depth_sensor_vicon_calibration_HEADERS
-    include/${PROJECT_NAME}/calibration.hpp
+set(oni_vicon_calibration_HEADERS
+    include/${PROJECT_NAME}/calibrator.hpp
 )
 
-set(depth_sensor_vicon_calibration_SOURCES
-    src/${PROJECT_NAME}/calibration.cpp
+set(oni_vicon_calibration_SOURCES
+    src/${PROJECT_NAME}/calibrator.cpp
 )
 
-add_library(depth_sensor_vicon_calibration
-   ${depth_sensor_vicon_calibration_HEADERS}
-   ${depth_sensor_vicon_calibration_SOURCES}
+add_library(oni_vicon_calibration
+   ${oni_vicon_calibration_HEADERS}
+   ${oni_vicon_calibration_SOURCES}
 )
 
-target_link_libraries(depth_sensor_vicon_calibration
+target_link_libraries(oni_vicon_calibration
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES}
   yaml-cpp
@@ -109,7 +109,7 @@ target_link_libraries(depth_sensor_vicon_calibration
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS depth_sensor_vicon_calibration depth_sensor_vicon_calibration_node
+# install(TARGETS oni_vicon_calibration oni_vicon_calibration_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -134,7 +134,7 @@ target_link_libraries(depth_sensor_vicon_calibration
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_depth_sensor_vicon_calibration.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_oni_vicon_calibration.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

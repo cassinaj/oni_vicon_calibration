@@ -1,4 +1,4 @@
-string ACTION_NAME=/depth_sensor_vicon_calibration/LocalCalibration
+string ACTION_NAME=/oni_vicon_calibration/LocalCalibration
 
 string calibration_object_name
 string calibration_object

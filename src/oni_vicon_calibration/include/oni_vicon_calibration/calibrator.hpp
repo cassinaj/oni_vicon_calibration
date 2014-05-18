@@ -44,8 +44,8 @@
  *   Karlsruhe Institute of Technology (KIT)
  */
 
-#ifndef DEPTH_SENSOR_VICON_CALIBRATION_CALIBRATION_HPP
-#define DEPTH_SENSOR_VICON_CALIBRATION_CALIBRATION_HPP
+#ifndef oni_vicon_calibration_CALIBRATION_HPP
+#define oni_vicon_calibration_CALIBRATION_HPP
 
 // eigen
 #include <Eigen/Eigen>
@@ -67,20 +67,20 @@
 #include <actionlib/server/simple_action_server.h>
 
 // actions
-#include <depth_sensor_vicon_calibration/GlobalCalibrationAction.h>
-#include <depth_sensor_vicon_calibration/LocalCalibrationAction.h>
-#include <depth_sensor_vicon_calibration/TestCalibrationAction.h>
+#include <oni_vicon_calibration/GlobalCalibrationAction.h>
+#include <oni_vicon_calibration/LocalCalibrationAction.h>
+#include <oni_vicon_calibration/TestCalibrationAction.h>
 
 // services
-#include <depth_sensor_vicon_calibration/ContinueGlobalCalibration.h>
-#include <depth_sensor_vicon_calibration/CompleteGlobalCalibration.h>
-#include <depth_sensor_vicon_calibration/ContinueLocalCalibration.h>
-#include <depth_sensor_vicon_calibration/CompleteLocalCalibration.h>
-#include <depth_sensor_vicon_calibration/ContinueTestCalibration.h>
-#include <depth_sensor_vicon_calibration/SaveGlobalCalibration.h>
-#include <depth_sensor_vicon_calibration/LoadGlobalCalibration.h>
-#include <depth_sensor_vicon_calibration/SaveLocalCalibration.h>
-#include <depth_sensor_vicon_calibration/LoadLocalCalibration.h>
+#include <oni_vicon_calibration/ContinueGlobalCalibration.h>
+#include <oni_vicon_calibration/CompleteGlobalCalibration.h>
+#include <oni_vicon_calibration/ContinueLocalCalibration.h>
+#include <oni_vicon_calibration/CompleteLocalCalibration.h>
+#include <oni_vicon_calibration/ContinueTestCalibration.h>
+#include <oni_vicon_calibration/SaveGlobalCalibration.h>
+#include <oni_vicon_calibration/LoadGlobalCalibration.h>
+#include <oni_vicon_calibration/SaveLocalCalibration.h>
+#include <oni_vicon_calibration/LoadLocalCalibration.h>
 
 // spkf tracker
 #include <simple_object_tracker/spkf_object_tracker.hpp>
@@ -89,12 +89,12 @@
 #include <oni_vicon_common/calibration_reader.hpp>
 #include <oni_vicon_common/calibration_writer.hpp>
 
-namespace depth_sensor_vicon_calibration
+namespace oni_vicon_calibration
 {
-    class Calibration
+    class Calibrator
     {
     public:
-        Calibration(ros::NodeHandle& node_handle,
+        Calibrator(ros::NodeHandle& node_handle,
                     int global_calibration_iterations,
                     int local_calibration_iterations,
                     const std::string& global_calibration_object_name,
